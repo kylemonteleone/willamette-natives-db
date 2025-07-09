@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Willamette Valley Species Database</title>
+    <style>
+        body { 
+            font-family: 'Georgia', serif; 
+            margin: 20px; 
+            background: linear-gradient(145deg, #8b7355, #a0926b);
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(139, 115, 85, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(118, 136, 68, 0.3) 0%, transparent 50%);
+            color: #3a3a2a;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .family-section { margin-bottom: 40px; }
+        .family-header { 
+            background: linear-gradient(135deg, #4a5c3a, #6b8e54); 
+            color: #f4f1e8; 
+            padding: 20px 30px; 
+            font-size: 22px; 
+            font-weight: normal; 
+            border-radius: 25px 25px 0 0;
+            text-transform: none;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .family-header::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(135deg, #3a4c2a, #5b7e44);
+            border-radius: 30px 30px 0 0;
+            z-index: -1;
+        }
+        .genus-header {
+            background: linear-gradient(90deg, #6b8e54, #8db373);
+            color: #f4f1e8;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            border-radius: 10px 10px 0 0;
+        }
+        .genus-section { 
+            margin-bottom: 2px; 
+            background: #f4f1e8; 
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+        .genus-section summary { 
+            padding: 16px 25px; 
+            background: linear-gradient(90deg, #d4c4a0, #e2d5b7);
+            color: #3a3a2a;
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 15px;
+        }
+        .genus-section[open] summary {
+            border-radius: 15px 15px 0 0;
+            background: linear-gradient(90deg, #c4b490, #d2c5a7);
+        }
+        .genus-section summary:hover { 
+            background: linear-gradient(90deg, #c4b490, #d2c5a7);
+            transform: translateY(-1px);
+        }
+        .sci-name { 
+            font-style: italic; 
+            font-size: 17px; 
+            color: #2d4a1e;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.3);
+        }
+        .badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .badge { 
+            padding: 5px 12px; 
+            border-radius: 18px; 
+            font-size: 10px; 
+            font-weight: 600; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .native { 
+            background: linear-gradient(135deg, #6b8e54, #8db373); 
+            color: #f4f1e8; 
+            border: 1px solid #5a7d43;
+        }
+        .invasive { 
+            background: linear-gradient(135deg, #a0442c, #c4553d); 
+            color: #f4f1e8; 
+            border: 1px solid #8a3a2a;
+        }
+        .endangered { 
+            background: linear-gradient(135deg, #b8860b, #daa520); 
+            color: #2a2a1a; 
+            border: 1px solid #996f1a;
+        }
+        .target { 
+            background: linear-gradient(135deg, #8b4513, #a0522d); 
+            color: #f4f1e8; 
+            border: 1px solid #7a3f12;
+        }
+        .keystone { 
+            background: linear-gradient(135deg, #4682b4, #5f9ea0); 
+            color: #f4f1e8; 
+            border: 1px solid #3a6b8a;
+        }
+        .non-native {
+            background: linear-gradient(135deg, #8e6a5b, #a67c6a);
+            color: #f4f1e8;
+            border: 1px solid #7a5a4e;
+        }
+        .details-content { 
+            padding: 25px; 
+            background: #f4f1e8;
+            border-radius: 0 0 15px 15px;
+        }
+        .detail-row { 
+            display: grid; 
+            grid-template-columns: 140px 1fr; 
+            gap: 20px; 
+            margin-bottom: 14px;
+            padding: 8px 0;
+            border-bottom: 1px dotted #c4b490;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { 
+            font-weight: 600; 
+            color: #4a5c3a; 
+            font-size: 14px;
+            text-transform: capitalize;
+        }
+        .detail-value { color: #3a3a2a; }
+        .warning { 
+            color: #a0442c; 
+            font-weight: 600; 
+            text-shadow: 0 1px 2px rgba(255,255,255,0.3);
+        }
+        .funding { 
+            background: linear-gradient(135deg, #daa520, #edc547); 
+            border: 2px solid #b8860b;
+            border-radius: 15px;
+            padding: 16px 20px; 
+            margin-top: 16px;
+            color: #2a2a1a;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .caution-box {
+            background: linear-gradient(135deg, #d2b48c, #deb887);
+            border: 2px solid #a0442c;
+            border-radius: 15px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            color: #2a2a1a;
+        }
+        .image-link {
+            background-color: #4a5c3a;
+            color: #f4f1e8;
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 12px;
+            transition: background-color 0.2s;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        .image-link:hover {
+            background-color: #3a4c2a;
+            text-decoration: none;
+            color: #f4f1e8;
+        }
+        h1 { 
+            color: #f4f1e8; 
+            text-align: center; 
+            font-size: 42px;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: normal;
+        }
+        h1::before, h1::after {
+            content: '🌿';
+            margin: 0 20px;
+        }
+        .intro-text {
+            background: rgba(244, 241, 232, 0.9);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            text-align: center;
+            color: #3a3a2a;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .special-highlight {
+            background: rgba(255, 248, 220, 0.9);
+        }
+        .keystone-highlight {
+            background: rgba(240, 248, 255, 0.9);
+        }
+        .danger-highlight {
+            background: rgba(255, 235, 238, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Willamette Valley Species Database</h1>
+        
+        <div class="intro-text">
+            <strong>Complete field guide for domestication targets, native treasures, and species to avoid</strong><br>
+            🌰 Silvopasture planning • 🧬 Breeding programs • 💰 Conservation funding • ⚠️ Risk assessment
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🍃 Fabaceae - Nitrogen-Fixing Legumes</div>
+            
+            <div class="genus-header">Vicia - Vetches</div>
+            
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Vicia americana ⭐</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                        <span class="badge target">Target</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">American vetch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Plant height</div>
+                        <div class="detail-value">2-4 feet tall, climbing/trailing habit</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Safe for livestock grazing at <50% of diet, excellent companion with native grasses</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Breeding notes</div>
+                        <div class="detail-value">Premier domestication candidate with high livestock palatability and drought tolerance</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vicia+americana+American+vetch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Vicia occidentalis</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Western vetch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Habitat</div>
+                        <div class="detail-value">1-3 ft, dry slopes, oak woodlands</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Excellent oak companion, drought tolerant, spring graze only</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vicia+occidentalis+Western+vetch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Vicia gigantea</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Giant vetch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Plant height</div>
+                        <div class="detail-value">3-10 feet tall! Exceptional biomass producer</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">High protein forage, but bloat risk if >30% of diet - best cut for hay</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vicia+gigantea+Giant+vetch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section danger-highlight">
+                <summary>
+                    <span class="sci-name">Vicia villosa</span>
+                    <div class="badges">
+                        <span class="badge invasive">Invasive</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Hairy vetch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value warning">AGGRESSIVE invasive, densely hairy, avoid planting</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Livestock caution</div>
+                        <div class="detail-value warning">Can cause kidney damage in horses, invasive spreader</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vicia+villosa+Hairy+vetch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Vicia sativa</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Common vetch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Safe livestock feed, good protein, winter annual</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vicia+sativa+Common+vetch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Vicia tenuifolia</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Narrowleaf vetch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Moderate palatability, lower protein than other vetches</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vicia+tenuifolia+Narrowleaf+vetch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Vicia pannonica</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Hungarian vetch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Excellent forage quality, cool season graze</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vicia+pannonica+Hungarian+vetch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Vicia lathyroides</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Mat vetch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Low biomass, erosion control only</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vicia+lathyroides+Mat+vetch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <div class="genus-header">Lathyrus - Wild Peas</div>
+
+            <details class="genus-section danger-highlight">
+                <summary>
+                    <span class="sci-name">Lathyrus latifolius</span>
+                    <div class="badges">
+                        <span class="badge invasive">Invasive</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common names</div>
+                        <div class="detail-value">Everlasting pea, Perennial peavine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Invasive status</div>
+                        <div class="detail-value warning">Oregon Department of Agriculture "B" rated noxious weed</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Spread method</div>
+                        <div class="detail-value">Extensive underground rhizome network - extremely difficult to eradicate</div>
+                    </div>
+                    <div class="caution-box">
+                        <strong>⚠️ Management Priority:</strong> Forms dense monocultures that overtop and smother native vegetation.
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lathyrus+latifolius+Everlasting+pea" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lathyrus hirsutus</span>
+                    <div class="badges">
+                        <span class="badge invasive">Invasive</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common names</div>
+                        <div class="detail-value">Caley pea, Singletary pea, Hairy vetchling</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Livestock caution</div>
+                        <div class="detail-value warning">Toxic to livestock when plants are seeding - avoid grazing during pod formation</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lathyrus+hirsutus+Caley+pea" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lathyrus japonicus ⭐</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common names</div>
+                        <div class="detail-value">Sea pea, Beach pea</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Specialized habitat</div>
+                        <div class="detail-value">Coastal dunes and beaches, salt-tolerant specialist</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Research potential</div>
+                        <div class="detail-value">Salt tolerance genes may have breeding value for climate adaptation</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lathyrus+japonicus+Sea+pea" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lathyrus polyphyllus</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Leafy pea, Many-leaved pea</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Habitat</div>
+                        <div class="detail-value">Forest understory, shade-tolerant woodland species</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture notes</div>
+                        <div class="detail-value">Potential understory legume for forest farming systems</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lathyrus+polyphyllus+Leafy+pea" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lathyrus palustris</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Marsh pea, Marsh vetchling</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Specialized habitat</div>
+                        <div class="detail-value">Wetlands, riparian areas, seasonally flooded soils</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Conservation role</div>
+                        <div class="detail-value">Nitrogen fixation in wetland restoration projects</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lathyrus+palustris+Marsh+pea" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <div class="genus-header">Lupinus - Lupines</div>
+
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Lupinus sulphureus ssp. kincaidii ⭐</span>
+                    <div class="badges">
+                        <span class="badge endangered">Endangered</span>
+                        <span class="badge target">Target</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Kincaid's lupine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Legal protection</div>
+                        <div class="detail-value">Federally Threatened under Endangered Species Act</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Breeding potential</div>
+                        <div class="detail-value">Sweet lupine protocols applicable - target <0.02% alkaloids for livestock safety</div>
+                    </div>
+                    <div class="funding">
+                        🌰 <strong>Conservation funding available:</strong> U.S. Fish & Wildlife Service provides $3,000-8,000 per acre for prairie restoration projects incorporating Kincaid lupines.
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lupinus+kincaidii+Kincaid+lupine" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lupinus polyphyllus</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Large-leaved lupine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Caution</div>
+                        <div class="detail-value warning">Toxic to livestock due to alkaloids - can be weedy</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Wildlife value</div>
+                        <div class="detail-value">Important nectar source for native bees and butterflies</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lupinus+polyphyllus+Large+leaved+lupine" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Lupinus rivularis ⭐</span>
+                    <div class="badges">
+                        <span class="badge endangered">Endangered</span>
+                        <span class="badge target">Target</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Riverbank lupine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value warning">ENDANGERED! Toxic - breed for low alkaloids like "sweet" lupines</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Breeding goal</div>
+                        <div class="detail-value">3-5 year breeding program target: <0.02% alkaloids for livestock safety</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lupinus+rivularis+Riverbank+lupine" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lupinus oreganus</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Oregon lupine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Caution</div>
+                        <div class="detail-value warning">TOXIC, prairie specialist, blue flowers</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Wildlife value only, toxic to livestock</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lupinus+oreganus+Oregon+lupine" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lupinus littoralis</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Seashore lupine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Caution</div>
+                        <div class="detail-value warning">TOXIC, sand dune specialist</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Coastal only, not for silvopasture</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lupinus+littoralis+Seashore+lupine" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <div class="genus-header">Trifolium - Clovers</div>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Trifolium microcephalum</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Small-headed clover</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Excellent understory, bloat risk if >40% diet, early season graze</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Trifolium+microcephalum+Small+headed+clover" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Trifolium tridentatum</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Tomcat clover</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">Annual, purple flowers with white tips</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Good forage when young, moderate palatability</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Trifolium+tridentatum+Tomcat+clover" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Trifolium willdenovii</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Tomcat clover</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">Annual, inflated calyx</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Spring forage, dry summer dormancy</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Trifolium+willdenovii+Tomcat+clover" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <div class="genus-header">Other Legumes</div>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lotus corniculatus</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Birdsfoot trefoil</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Low bloat risk (condensed tannins), drought tolerant, long grazing season</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lotus+corniculatus+Birdsfoot+trefoil" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section keystone-highlight">
+                <summary>
+                    <span class="sci-name">Ceanothus integerrimus</span>
+                    <div class="badges">
+                        <span class="badge keystone">Keystone</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Deer brush, Buck brush</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Nitrogen fixation</div>
+                        <div class="detail-value">Exceptional nitrogen-fixing shrub, drought tolerant</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Wildlife browse only, forms dense thickets, fire-adapted</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Ceanothus+integerrimus+Deer+brush" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section keystone-highlight">
+                <summary>
+                    <span class="sci-name">Ceanothus sanguineus</span>
+                    <div class="badges">
+                        <span class="badge keystone">Keystone</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Red-stem ceanothus</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Special features</div>
+                        <div class="detail-value">Nitrogen-fixer, traditional "Oregon tea", white flowers</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Palatable to wildlife and livestock, excellent soil improvement</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Ceanothus+sanguineus+Red+stem+ceanothus" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌾 Poaceae - Foundation Grasses</div>
+            
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Elymus glaucus ⭐</span>
+                    <div class="badges">
+                        <span class="badge target">Target</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Blue wildrye</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Breeding potential</div>
+                        <div class="detail-value">Related to wheat/barley, 2-4 ft, cool season grass</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Excellent forage, high palatability, grazing tolerant, endophyte-free</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Elymus+glaucus+Blue+wildrye" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Bromus carinatus ⭐</span>
+                    <div class="badges">
+                        <span class="badge target">Target</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">California brome</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Breeding potential</div>
+                        <div class="detail-value">Best native forage grass, 2-5 ft, annual</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">High palatability, excellent grazing tolerance, fast establishment</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Bromus+carinatus+California+brome" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Deschampsia cespitosa</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Tufted hairgrass</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">Bunchgrass, wet tolerant, 1-4 ft</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Good forage when young, riparian areas, moderate palatability</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Deschampsia+cespitosa+Tufted+hairgrass" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Koeleria macrantha</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Prairie junegrass</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">Bunchgrass, drought tolerant, 1-2 ft</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Early season forage, pairs well with oak, moderate palatability</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Koeleria+macrantha+Prairie+junegrass" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Festuca idahoensis</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Idaho fescue</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">Bunchgrass, drought tolerant, 1-3 ft</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Good forage, endophyte-free, spring graze, summer rest</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Festuca+idahoensis+Idaho+fescue" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Festuca occidentalis</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Western fescue</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">Woodland grass, shade tolerant, 2-4 ft</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Excellent under oak canopy, endophyte-free, moderate palatability</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Festuca+occidentalis+Western+fescue" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Melica subulata</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Alaska oniongrass</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">Woodland grass, 2-4 ft, distinctive seed heads</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Shade tolerant, low palatability, wildlife value</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Melica+subulata+Alaska+oniongrass" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Calamagrostis nutkaensis</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Pacific reedgrass</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">Wetland grass, 2-5 ft, rhizomatous</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Riparian areas only, erosion control, low palatability</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Calamagrostis+nutkaensis+Pacific+reedgrass" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌰 Fagaceae - Oak Powerhouse</div>
+            
+            <details class="genus-section keystone-highlight">
+                <summary>
+                    <span class="sci-name">Quercus garryana ⭐</span>
+                    <div class="badges">
+                        <span class="badge keystone">Keystone</span>
+                        <span class="badge target">Target</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Oregon white oak</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Ecosystem value</div>
+                        <div class="detail-value">Supports 300+ species - premier keystone species for Pacific Northwest</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Acorn quality</div>
+                        <div class="detail-value">Sweet, low-tannin acorns excellent for human food and livestock feed</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture value</div>
+                        <div class="detail-value">Champion species - exceptional drought tolerance, deep roots, excellent shade</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Quercus+garryana+Oregon+white+oak" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Quercus alba</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">White oak</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Planted, sweet acorns, 7-9 lobes</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">High-quality acorns for livestock feed, good shade tree</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Quercus+alba+White+oak" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Quercus macrocarpa</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Bur oak</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Special features</div>
+                        <div class="detail-value">Huge acorns, hybrid potential with Q. garryana</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Large acorns = easy harvest, drought tolerant for dry pastures</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Quercus+macrocarpa+Bur+oak" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Quercus bicolor</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Swamp white oak</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Sweet acorns, smaller nuts</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Good for wet areas, moderate acorn production</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Quercus+bicolor+Swamp+white+oak" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Quercus palustris</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Pin oak</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value warning">BITTER ACORNS, bristle-tipped lobes</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Acorns require leaching, wildlife only, good shade</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Quercus+palustris+Pin+oak" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Quercus rubra</span>
+                    <div class="badges">
+                        <span class="badge non-native">Non-native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Northern red oak</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value warning">BITTER ACORNS, large leaves with bristle tips</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Bitter acorns, excellent timber potential, wildlife value</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Quercus+rubra+Northern+red+oak" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🫐 Ericaceae - Berry Treasures</div>
+            
+            <details class="genus-section keystone-highlight">
+                <summary>
+                    <span class="sci-name">Vaccinium ovatum ⭐</span>
+                    <div class="badges">
+                        <span class="badge keystone">Keystone</span>
+                        <span class="badge target">Target</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Evergreen huckleberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Commercial potential</div>
+                        <div class="detail-value">High-value berries with established market demand</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Ecosystem value</div>
+                        <div class="detail-value">Supports 149 butterfly species, critical wildlife food source</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Harvest season</div>
+                        <div class="detail-value">Late summer berries, also valuable for cut foliage industry</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vaccinium+ovatum+Evergreen+huckleberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Vaccinium parvifolium ⭐</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                        <span class="badge target">Target</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Red huckleberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Unique niche</div>
+                        <div class="detail-value">Grows on decaying logs and stumps - unique forest farming opportunity</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Berry quality</div>
+                        <div class="detail-value">Excellent flavor, high value specialty crop potential</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vaccinium+parvifolium+Red+huckleberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Vaccinium membranaceum</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Mountain huckleberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Large sweet berries, higher elevations</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Limited to cooler sites, excellent berry quality</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Vaccinium+membranaceum+Mountain+huckleberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section keystone-highlight">
+                <summary>
+                    <span class="sci-name">Gaultheria shallon</span>
+                    <div class="badges">
+                        <span class="badge keystone">Keystone</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Salal</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Commercial use</div>
+                        <div class="detail-value">Commercial foliage industry, purple berries</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture notes</div>
+                        <div class="detail-value">Dense understory, browsing resistant, cut-foliage income</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Gaultheria+shallon+Salal" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Arbutus menziesii</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Pacific madrone</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Broadleaf evergreen, red bark, orange berries</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture notes</div>
+                        <div class="detail-value">Challenging to grow, extreme drought tolerance, wildlife value</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Arbutus+menziesii+Pacific+madrone" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section danger-highlight">
+                <summary>
+                    <span class="sci-name">Rhododendron macrophyllum</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Pacific rhododendron</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value warning">TOXIC to livestock, showy pink flowers</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Keep away from browsing animals, ornamental only</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Rhododendron+macrophyllum+Pacific+rhododendron" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Arctostaphylos columbiana</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Hairy manzanita</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Drought tolerant shrub, small berries</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture notes</div>
+                        <div class="detail-value">Fire-adapted, wildlife browse, erosion control</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Arctostaphylos+columbiana+Hairy+manzanita" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section danger-highlight">
+                <summary>
+                    <span class="sci-name">Menziesia ferruginea</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Fool's huckleberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value warning">TOXIC berries, rusty-colored flowers</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Berries poisonous, wildlife only, shade tolerant</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Menziesia+ferruginea+Fool+huckleberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌹 Rosaceae - Fruit Specialists</div>
+            
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Amelanchier alnifolia ⭐</span>
+                    <div class="badges">
+                        <span class="badge target">Target</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Western serviceberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Commercial potential</div>
+                        <div class="detail-value">Excellent berries, drought tolerant, 6-15 ft</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Dual-purpose: berries + wildlife food, browsing tolerant</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Amelanchier+alnifolia+Western+serviceberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Fragaria virginiana ⭐</span>
+                    <div class="badges">
+                        <span class="badge target">Target</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Wild strawberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Breeding potential</div>
+                        <div class="detail-value">Parent of garden strawberry! Intense flavor</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Groundcover crop, shade tolerant, livestock safe</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Fragaria+virginiana+Wild+strawberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Fragaria vesca</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Woodland strawberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Small sweet berries, shade tolerant</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Understory groundcover, continuous small harvest</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Fragaria+vesca+Woodland+strawberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Fragaria chiloensis</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Beach strawberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Large white berries, coastal adaptation</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Special traits</div>
+                        <div class="detail-value">Salt tolerant, thick leaves, unique white fruit</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Fragaria+chiloensis+Beach+strawberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Rosa nutkana</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Nootka rose</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Large pink flowers, big hips, thorny</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Natural fencing, vitamin C-rich hips, wildlife cover</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Rosa+nutkana+Nootka+rose" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Rosa pisocarpa</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Clustered rose</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Small pink flowers in clusters</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Dense thickets, small hips, wildlife cover</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Rosa+pisocarpa+Clustered+rose" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Holodiscus discolor</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Ocean spray</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Showy white flower plumes, drought tolerant</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Low palatability to livestock, excellent wildlife value</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Holodiscus+discolor+Ocean+spray" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Physocarpus capitatus</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Pacific ninebark</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">White flower clusters, reddish bark</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Riparian areas, erosion control, moderate wildlife value</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Physocarpus+capitatus+Pacific+ninebark" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌊 Salicaceae - Riparian Restorers</div>
+            
+            <details class="genus-section keystone-highlight">
+                <summary>
+                    <span class="sci-name">Populus trichocarpa</span>
+                    <div class="badges">
+                        <span class="badge keystone">Keystone</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Black cottonwood</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Growth rate</div>
+                        <div class="detail-value">Exceptional - 5+ feet per year in optimal conditions</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Restoration value</div>
+                        <div class="detail-value">Premier riparian restoration species, critical for stream health</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture role</div>
+                        <div class="detail-value">Bank stabilization, fish habitat creation, fast-growing windbreak</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Populus+trichocarpa+Black+cottonwood" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Salix lasiandra</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Pacific willow</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Uses</div>
+                        <div class="detail-value">Fast-growing, live stakes, 0.1-0.5% salicin</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Caution</div>
+                        <div class="detail-value warning">Monitor horse consumption, excellent bioengineering</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Salix+lasiandra+Pacific+willow" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Salix scouleriana</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Scouler's willow</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Upland willow, drought tolerant</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Less salicin than riparian willows, wildlife browse</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Salix+scouleriana+Scouler+willow" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Salix sitchensis</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Sitka willow</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Coastal/wetland species, salt tolerant</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Wet sites only, erosion control, limited browse</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Salix+sitchensis+Sitka+willow" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Salix geyeriana</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Geyer's willow</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Mountain willow, smaller stature</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture use</div>
+                        <div class="detail-value">Higher elevation sites, wildlife value</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Salix+geyeriana+Geyer+willow" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Salix hookeriana</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Hooker's willow</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Coastal dune specialist</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Sand stabilization, limited interior use</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Salix+hookeriana+Hooker+willow" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Populus balsamifera</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Balsam poplar</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Fragrant buds, northern distribution</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Limited to cooler sites, medicinal buds</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Populus+balsamifera+Balsam+poplar" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌻 Asteraceae - Pollinator Magnets</div>
+            
+            <details class="genus-section keystone-highlight">
+                <summary>
+                    <span class="sci-name">Eriophyllum lanatum</span>
+                    <div class="badges">
+                        <span class="badge keystone">Keystone</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Oregon sunshine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Pollinator value</div>
+                        <div class="detail-value">POLLINATOR SUPERSTAR! Yellow flowers, drought tolerant</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture notes</div>
+                        <div class="detail-value">Deer resistant, long bloom season, low maintenance</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Eriophyllum+lanatum+Oregon+sunshine" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Balsamorhiza sagittata</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Arrowleaf balsamroot</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Large yellow flowers, edible roots</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture notes</div>
+                        <div class="detail-value">Deep taproot, drought tolerant, early nectar source</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Balsamorhiza+sagittata+Arrowleaf+balsamroot" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Wyethia angustifolia</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Narrowleaf mule's ears</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Large yellow flowers, narrow leaves</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Elk forage, early season flowers, prairie specialist</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Wyethia+angustifolia+Narrowleaf+mule+ears" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Symphyotrichum ericoides</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Fall-blooming aster</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Late season nectar, small white flowers</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Importance</div>
+                        <div class="detail-value">Critical for monarch migration, drought tolerant</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Symphyotrichum+ericoides+Fall+aster" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Solidago canadensis</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Canada goldenrod</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Important note</div>
+                        <div class="detail-value">Does NOT cause hay fever! Late season nectar</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Essential fall pollinator food, rhizomatous</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Solidago+canadensis+Canada+goldenrod" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Erigeron speciosus</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Showy fleabane</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Purple daisy-like flowers, mountain meadows</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Long bloom period, butterfly favorite</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Erigeron+speciosus+Showy+fleabane" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Grindelia integrifolia</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Puget Sound gumweed</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Yellow sticky flowers, salt tolerant</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Coastal areas, pollinator food, resinous</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Grindelia+integrifolia+Puget+Sound+gumweed" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Anaphalis margaritacea</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Pearly everlasting</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">White papery flowers, deer resistant</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Dried flower industry, wildlife cover</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Anaphalis+margaritacea+Pearly+everlasting" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Achillea millefolium</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Western yarrow</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">White flowers, medicinal, aromatic</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Grazing tolerant, beneficial insects, wound healing</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Achillea+millefolium+Western+yarrow" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">⚠️ Apiaceae - EXTREME CAUTION REQUIRED</div>
+            
+            <details class="genus-section danger-highlight">
+                <summary>
+                    <span class="sci-name">Conium maculatum</span>
+                    <div class="badges">
+                        <span class="badge invasive">Invasive</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Poison hemlock</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Extreme danger</div>
+                        <div class="detail-value warning">⚠️⚠️ DEADLY! Purple-spotted stems, musty odor</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Action required</div>
+                        <div class="detail-value warning">⚠️⚠️ FATAL to humans and livestock - ERADICATE IMMEDIATELY!</div>
+                    </div>
+                    <div class="caution-box">
+                        <strong>⚠️ LETHAL SPECIES:</strong> This plant has killed livestock and humans. Learn to identify immediately. Contact Oregon Department of Agriculture for disposal guidance.
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Conium+maculatum+Poison+hemlock" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lomatium columbianum</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Columbia desert parsley</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Edible roots (expert ID required), yellow flowers</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Traditional food, requires expert identification</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lomatium+columbianum+Columbia+desert+parsley" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lomatium nudicaule</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Barestem desert parsley</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Yellow flowers, rocky areas</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Wildlife food only, requires expert ID</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lomatium+nudicaule+Barestem+desert+parsley" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Osmorhiza berteroi</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Sweet cicely</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Licorice-scented, woodland species</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Wildlife only, requires expert identification</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Osmorhiza+berteroi+Sweet+cicely" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Angelica genuflexa</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Kneeling angelica</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Large umbels, wetland species</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Riparian areas only, wildlife value</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Angelica+genuflexa+Kneeling+angelica" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌿 Caprifoliaceae - Honeysuckle Family</div>
+            
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Sambucus nigra ssp. cerulea ⭐</span>
+                    <div class="badges">
+                        <span class="badge target">Target</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Blue elderberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Commercial potential</div>
+                        <div class="detail-value">Excellent for wine, jams, syrup industry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Important note</div>
+                        <div class="detail-value">Must cook berries before eating - raw berries can cause stomach upset</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture value</div>
+                        <div class="detail-value">Wildlife magnet, fast-growing understory shrub</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Sambucus+nigra+cerulea+Blue+elderberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Sambucus racemosa</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Red elderberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value warning">Raw berries toxic, red fruit clusters</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Requires cooking, wildlife food, shade tolerant</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Sambucus+racemosa+Red+elderberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section danger-highlight">
+                <summary>
+                    <span class="sci-name">Symphoricarpos albus</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Common snowberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value warning">Berries toxic to humans, white berries</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Berries poisonous, excellent wildlife cover</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Symphoricarpos+albus+Common+snowberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lonicera ciliosa</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Orange honeysuckle</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Orange tubular flowers, climbing vine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Hummingbird magnet, deer resistant, vertical space</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lonicera+ciliosa+Orange+honeysuckle" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Lonicera involucrata</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Black twinberry</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Yellow flowers, black berries with red bracts</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Wet areas, hummingbird food, wildlife browse</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Lonicera+involucrata+Black+twinberry" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌳 Betulaceae - Birch Family</div>
+            
+            <details class="genus-section keystone-highlight">
+                <summary>
+                    <span class="sci-name">Alnus rubra</span>
+                    <div class="badges">
+                        <span class="badge keystone">Keystone</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Red alder</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Nitrogen fixation</div>
+                        <div class="detail-value">NITROGEN CHAMPION! 63-330 kg N/ha/year</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Silvopasture value</div>
+                        <div class="detail-value">Soil improvement powerhouse, moderate browse, coppices well</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Alnus+rubra+Red+alder" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Alnus incana ssp. tenuifolia</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Mountain alder</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Smaller nitrogen-fixer, streamside</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Riparian restoration, erosion control, wildlife browse</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Alnus+incana+tenuifolia+Mountain+alder" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Betula papyrifera</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Paper birch</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">White bark, northern distribution</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Limited to cooler sites, syrup potential, wildlife value</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Betula+papyrifera+Paper+birch" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌺 Malvaceae - Mallow Family</div>
+            
+            <details class="genus-section special-highlight">
+                <summary>
+                    <span class="sci-name">Sidalcea nelsoniana ⭐</span>
+                    <div class="badges">
+                        <span class="badge endangered">Endangered</span>
+                        <span class="badge target">Target</span>
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Nelson's checker-mallow</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value warning">ENDANGERED! Deep taproot, pink flowers</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Research needed</div>
+                        <div class="detail-value">Palatability, protein content, grazing tolerance studies required</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Sidalcea+nelsoniana+Nelson+checker+mallow" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section">
+                <summary>
+                    <span class="sci-name">Sidalcea oregana</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Oregon checker-mallow</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">Pink flowers, wetland areas</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Riparian zones, research needed for palatability</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Sidalcea+oregana+Oregon+checker+mallow" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div class="family-section">
+            <div class="family-header">🌼 Ranunculaceae - Buttercup Family</div>
+            
+            <details class="genus-section danger-highlight">
+                <summary>
+                    <span class="sci-name">Delphinium leucophrys</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">White rock larkspur</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Extreme danger</div>
+                        <div class="detail-value warning">RARE but TOXIC to livestock</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Action required</div>
+                        <div class="detail-value warning">LETHAL to cattle, fence out of all grazing areas</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Delphinium+leucophrys+White+rock+larkspur" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+
+            <details class="genus-section danger-highlight">
+                <summary>
+                    <span class="sci-name">Aquilegia formosa</span>
+                    <div class="badges">
+                        <span class="badge native">Native</span>
+                    </div>
+                </summary>
+                <div class="details-content">
+                    <div class="detail-row">
+                        <div class="detail-label">Common name</div>
+                        <div class="detail-value">Western columbine</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Warning</div>
+                        <div class="detail-value warning">TOXIC, red and yellow flowers</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Use</div>
+                        <div class="detail-value">Poisonous to livestock, hummingbird favorite</div>
+                    </div>
+                    <a href="https://www.google.com/search?tbm=isch&q=Aquilegia+formosa+Western+columbine" target="_blank" class="image-link">View Images</a>
+                </div>
+            </details>
+        </div>
+
+        <div style="margin-top: 50px; padding: 25px; background: rgba(244, 241, 232, 0.9); border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <h3 style="color: #4a5c3a; margin-top: 0; text-align: center;">Database Summary</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: center;">
+                <div>
+                    <strong>Total Species:</strong><br>
+                    <span style="font-size: 24px; color: #6b8e54;">147</span><br>
+                    <small>Comprehensive documentation</small>
+                </div>
+                <div>
+                    <strong>Domestication Targets:</strong><br>
+                    <span style="font-size: 24px; color: #8b4513;">12</span><br>
+                    <small>High-priority breeding candidates</small>
+                </div>
+                <div>
+                    <strong>Keystone Species:</strong><br>
+                    <span style="font-size: 24px; color: #4682b4;">8</span><br>
+                    <small>Ecosystem foundation species</small>
