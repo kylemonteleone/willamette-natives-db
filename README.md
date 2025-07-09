@@ -11,12 +11,12 @@ I'm an aspiring farmer focused on:
 - Plant domestication
 - Genetics and breeding
 
-This is a work-in-progress. I’m using this html to help catalog and assess species by native status, breeding potential, identifying characteristics, etc. I'm new to HTML...so some grace and feedback are super welcome!
+This is a work-in-progress (if you couldn't tell). I’m using this html to help catalog and assess species by native status, breeding potential, identifying characteristics, etc.. I'm new to HTML...so some grace and feedback are super welcome!
 
 ## Current Focus Species
 
 Especially interested in identifying natives and especially especially interested in endangered natives.
-**top contenders atm:**
+Top contenders atm:
 - Quercus garryana (Oregon white oak)
 - Vaccinium spp. (Huckleberries)
 - Vicia
